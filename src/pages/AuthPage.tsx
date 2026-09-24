@@ -135,7 +135,7 @@ export default function AuthPage() {
         </section>
 
         <main className="auth-form-panel flex w-full items-center justify-center overflow-hidden bg-white px-5 py-10 sm:px-10 lg:h-full lg:min-h-0 lg:w-1/2 lg:px-12 lg:py-6 xl:px-24">
-          <div className="w-full max-w-md">
+          <div className="auth-form-content w-full max-w-md">
             <div className="mb-8 lg:hidden">
               <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[#62513d] text-white shadow-lg">
                 <GraduationCap className="h-8 w-8" />
