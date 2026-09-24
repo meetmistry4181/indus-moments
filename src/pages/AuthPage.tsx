@@ -77,7 +77,6 @@ export default function AuthPage() {
                 <GraduationCap className="h-8 w-8" />
               </div>
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#62513d]">સત्यमેવ જયતે</p>
                 <p className="text-xl font-extrabold leading-none tracking-tight text-[#62513d]">INDUS</p>
                 <p className="text-xl font-extrabold leading-none tracking-tight text-[#62513d]">UNIVERSITY</p>
                 <p className="mt-1 text-[9px] font-semibold uppercase tracking-[0.17em] text-[#62513d]/75">Where Practice Meets Theory</p>
