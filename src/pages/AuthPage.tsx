@@ -215,7 +215,7 @@ export default function AuthPage() {
             )}
 
             {mode === 'signup' && role === 'student' && (
-              <div className="space-y-3 rounded-xl border border-blue-100 bg-blue-50/50 p-3">
+              <div className="auth-club-role space-y-3 rounded-xl border border-blue-100 bg-blue-50/50 p-3">
                 <label className="block text-xs font-medium text-slate-600">Club Role (Optional)</label>
                 <div className="grid gap-2 sm:grid-cols-3">
                   {[
