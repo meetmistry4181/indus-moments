@@ -95,7 +95,7 @@ export default function AuthPage() {
             <p className="mt-4 max-w-md text-base leading-7 text-[#38516a]">A place where ideas take shape, communities come together, and every moment becomes part of your university story.</p>
             <div className="mt-8 overflow-hidden rounded-2xl bg-white/40 p-2 shadow-xl ring-4 ring-white/40">
               <img
-                src="https://www.serosoft.com/client_images/Indus/indusbanner.jpg"
+                src="/indus-banner.jpg"
                 alt="Indus University campus"
                 className="h-auto max-h-[360px] min-h-[250px] w-full object-contain"
               />
