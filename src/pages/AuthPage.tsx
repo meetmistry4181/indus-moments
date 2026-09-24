@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, ArrowRight, GraduationCap, Shield, Sparkles } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
-import type { UserRole } from '@/lib/types';
+import { supabase } from '@/lib/supabase';
+import type { Club, UserRole } from '@/lib/types';
 
 export default function AuthPage() {
   const { signIn, signUp, sendPasswordReset } = useAuth();
@@ -12,10 +13,18 @@ export default function AuthPage() {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState<Exclude<UserRole, 'pending' | 'admin'>>('student');
+  const [clubRole, setClubRole] = useState<'none' | 'president' | 'photographer'>('none');
+  const [clubId, setClubId] = useState('');
+  const [clubs, setClubs] = useState<Club[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
+
+  useEffect(() => {
+    if (mode !== 'signup' || role !== 'student') return;
+    void supabase.rpc('list_signup_clubs').then(({ data }) => setClubs((data ?? []) as Club[]));
+  }, [mode, role]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +37,12 @@ export default function AuthPage() {
         setLoading(false);
         return;
       }
-      const { error } = await signUp(email, password, fullName, role);
+      if (role === 'student' && clubRole !== 'none' && !clubId) {
+        setError('Please select your club for the requested club role.');
+        setLoading(false);
+        return;
+      }
+      const { error } = await signUp(email, password, fullName, role, clubRole === 'none' ? undefined : clubRole, clubId || undefined);
       if (error) {
         setError(error);
         setLoading(false);
@@ -176,13 +190,54 @@ export default function AuthPage() {
                     <button
                       key={accountRole}
                       type="button"
-                      onClick={() => setRole(accountRole)}
+                      onClick={() => {
+                        setRole(accountRole);
+                        if (accountRole === 'faculty') {
+                          setClubRole('none');
+                          setClubId('');
+                        }
+                      }}
                       className={`rounded-xl border px-3 py-2.5 text-sm font-medium capitalize transition-all ${role === accountRole ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:border-slate-300'}`}
                     >
                       {accountRole}
                     </button>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {mode === 'signup' && role === 'student' && (
+              <div className="space-y-3 rounded-xl border border-blue-100 bg-blue-50/50 p-3">
+                <label className="block text-xs font-medium text-slate-600">Club Role (Optional)</label>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {[
+                    ['none', 'No club role'],
+                    ['president', 'Club President'],
+                    ['photographer', 'Club Photographer'],
+                  ].map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => {
+                        setClubRole(value as typeof clubRole);
+                        if (value === 'none') setClubId('');
+                      }}
+                      className={`rounded-lg border px-3 py-2 text-xs font-medium transition-all ${clubRole === value ? 'border-blue-500 bg-white text-blue-700 shadow-sm' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {clubRole !== 'none' && (
+                  <>
+                    <label className="block text-xs font-medium text-slate-600">Select Club</label>
+                    <select required value={clubId} onChange={(e) => setClubId(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-400">
+                      <option value="">Select club</option>
+                      {clubs.map((club) => <option key={club.id} value={club.id}>{club.name}</option>)}
+                    </select>
+                    <p className="text-xs text-blue-700">Your club role will require admin approval.</p>
+                  </>
+                )}
               </div>
             )}
 

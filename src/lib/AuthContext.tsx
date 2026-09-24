@@ -27,7 +27,9 @@ interface AuthState {
     email: string,
     password: string,
     fullName: string,
-    role: Exclude<UserRole, 'pending' | 'admin'>
+    role: Exclude<UserRole, 'pending' | 'admin'>,
+    clubRole?: 'president' | 'photographer',
+    clubId?: string
   ) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -223,7 +225,9 @@ export function AuthProvider({
       email: string,
       password: string,
       fullName: string,
-      role: Exclude<UserRole, 'pending' | 'admin'>
+      role: Exclude<UserRole, 'pending' | 'admin'>,
+      clubRole?: 'president' | 'photographer',
+      clubId?: string
     ) => {
       const isIndusuniEmail = (e: string) =>
         /^[A-Za-z0-9._%+-]+@(?:[A-Za-z0-9-]+\.)*indusuni\.ac\.in$/i.test(
@@ -245,6 +249,8 @@ export function AuthProvider({
             data: {
               full_name: fullName,
               role,
+              club_role: role === 'student' ? clubRole ?? 'none' : 'none',
+              club_id: role === 'student' ? clubId ?? null : null,
             },
           },
         });

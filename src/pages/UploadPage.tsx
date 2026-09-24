@@ -7,6 +7,7 @@ import { detectFaces, descriptorToArray } from '@/lib/faceApi';
 
 export default function UploadPage() {
   const { user, role } = useAuth();
+  const [approvedClubRole, setApprovedClubRole] = useState<'president' | 'photographer' | null>(null);
   const [events, setEvents] = useState<ClubEvent[]>([]);
   const [eventId, setEventId] = useState('');
   const [createEvent, setCreateEvent] = useState(false);
@@ -20,7 +21,14 @@ export default function UploadPage() {
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const cameraVideoRef = useRef<HTMLVideoElement | null>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
-  const canUpload = role === 'admin' || role === 'faculty';
+  const canUpload = role === 'admin' || role === 'faculty' || approvedClubRole !== null;
+
+  useEffect(() => {
+    if (!user || role !== 'student') return;
+    void supabase.from('club_members').select('club_role').eq('user_id', user.id).eq('status', 'approved').in('club_role', ['president', 'photographer']).limit(1).maybeSingle().then(({ data }) => {
+      setApprovedClubRole(data?.club_role === 'president' || data?.club_role === 'photographer' ? data.club_role : null);
+    });
+  }, [user, role]);
 
   const loadEvents = useCallback(async () => {
     const { data } = await supabase.from('events').select('*').order('event_date', { ascending: false });
@@ -164,7 +172,7 @@ export default function UploadPage() {
     setFiles([]); setBusy(false); loadEvents();
   };
 
-  if (!canUpload) return <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center"><UploadCloud className="mx-auto mb-3 h-10 w-10 text-slate-300" /><h1 className="text-lg font-bold text-slate-900">Upload access is restricted</h1><p className="mt-2 text-sm text-slate-500">Faculty and approved event team members can add event photos.</p></div>;
+  if (!canUpload) return <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center"><UploadCloud className="mx-auto mb-3 h-10 w-10 text-slate-300" /><h1 className="text-lg font-bold text-slate-900">Upload access is restricted</h1><p className="mt-2 text-sm text-slate-500">{role === 'student' ? 'Your club role is pending admin approval or you do not have a club upload role.' : 'Faculty and approved event team members can add event photos.'}</p></div>;
 
   return <div className="mx-auto max-w-3xl space-y-6">
     <div><p className="text-sm font-medium text-blue-600">Photographer portal</p><h1 className="mt-1 text-2xl font-bold text-slate-900">Add event photos</h1><p className="mt-2 text-sm text-slate-500">Upload a full event album in one go. Images stay private to approved university members.</p></div>

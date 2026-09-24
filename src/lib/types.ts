@@ -22,11 +22,15 @@ export interface Club {
   created_at: string;
 }
 
+export type ClubMemberRole = 'president' | 'photographer' | 'member';
+export type ClubMemberStatus = 'pending' | 'approved' | 'rejected';
+
 export interface ClubMember {
   id: string;
   club_id: string;
   user_id: string;
-  club_role: 'president' | 'member';
+  club_role: ClubMemberRole;
+  status: ClubMemberStatus;
   created_at: string;
 }
 

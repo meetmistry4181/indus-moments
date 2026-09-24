@@ -6,7 +6,6 @@ import {
   Image,
   Check,
   X,
-  BarChart3,
   RefreshCw,
   Search,
   UserCheck,
@@ -19,11 +18,21 @@ import {
 import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/lib/types';
 
+type ClubRoleRequest = {
+  id: string;
+  user_id: string;
+  club_role: 'president' | 'photographer';
+  status: 'pending' | 'approved' | 'rejected';
+  profiles: { full_name: string; email: string }[];
+  clubs: { name: string }[];
+};
+
 type Role = 'pending' | 'student' | 'faculty' | 'admin';
 
 export default function AdminPage() {
   const [users, setUsers] = useState<Profile[]>([]);
   const [stats, setStats] = useState<Record<string, number>>({});
+  const [clubRoleRequests, setClubRoleRequests] = useState<ClubRoleRequest[]>([]);
 
   const [busyUser, setBusyUser] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,12 +84,49 @@ export default function AdminPage() {
     }
   };
 
+  const loadClubRoleRequests = async () => {
+    const { data, error: requestError } = await supabase
+      .from('club_members')
+      .select('id, user_id, club_role, status, profiles(full_name, email), clubs(name)')
+      .eq('status', 'pending')
+      .in('club_role', ['president', 'photographer'])
+      .order('created_at', { ascending: true });
+
+    if (requestError) {
+      setError(requestError.message);
+      return;
+    }
+
+    setClubRoleRequests((data ?? []) as ClubRoleRequest[]);
+  };
+
   /*
    * Initial load
    */
   useEffect(() => {
     void load();
+    void loadClubRoleRequests();
   }, []);
+
+  const updateClubRoleRequest = async (id: string, status: 'approved' | 'rejected') => {
+    setBusyUser(id);
+    setError(null);
+    setSuccess(null);
+
+    const { error: requestError } = await supabase.rpc('admin_set_club_member_status', {
+      target_membership: id,
+      new_status: status,
+    });
+
+    if (requestError) {
+      setError(requestError.message);
+    } else {
+      setSuccess(`Club role request ${status}.`);
+      await loadClubRoleRequests();
+    }
+
+    setBusyUser(null);
+  };
 
   /*
    * Change user role
@@ -219,6 +265,50 @@ export default function AdminPage() {
 
           Refresh
         </button>
+      </div>
+
+      <div className="overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-amber-100 bg-amber-50/60 p-5">
+          <div>
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-amber-600" />
+              <h2 className="font-semibold text-slate-900">Club Role Requests</h2>
+            </div>
+            <p className="mt-1 text-sm text-slate-500">Verify student club president and photographer requests.</p>
+          </div>
+          <span className="rounded-lg bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-700">
+            {clubRoleRequests.length} pending
+          </span>
+        </div>
+
+        {clubRoleRequests.length === 0 ? (
+          <p className="p-5 text-sm text-slate-500">No pending club role requests.</p>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {clubRoleRequests.map((request) => {
+              const isBusy = busyUser === request.id;
+              return (
+                <div key={request.id} className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="font-semibold text-slate-800">{request.profiles?.[0]?.full_name || 'Student'}</p>
+                    <p className="text-sm text-slate-500">{request.profiles?.[0]?.email}</p>
+                    <p className="mt-1 text-xs font-medium capitalize text-blue-600">
+                      {request.club_role} · {request.clubs?.[0]?.name || 'Unknown club'}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button disabled={isBusy} onClick={() => void updateClubRoleRequest(request.id, 'approved')} className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50">
+                      <Check className="h-3 w-3" /> Approve
+                    </button>
+                    <button disabled={isBusy} onClick={() => void updateClubRoleRequest(request.id, 'rejected')} className="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50">
+                      <X className="h-3 w-3" /> Reject
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* ========================================================= */}
