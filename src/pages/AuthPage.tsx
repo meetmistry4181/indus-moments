@@ -134,7 +134,7 @@ export default function AuthPage() {
           <div className="absolute -right-28 top-1/3 h-72 w-72 rounded-full border-[36px] border-white/20" />
         </section>
 
-        <main className={`auth-form-panel flex w-full items-start justify-center bg-white px-5 py-10 sm:px-10 lg:h-full lg:min-h-0 lg:w-1/2 lg:px-12 lg:py-6 xl:px-24 ${mode === 'signup' && role === 'student' && clubRole !== 'none' ? 'overflow-y-auto' : 'overflow-visible'}`}>
+        <main className={`auth-form-panel flex w-full items-start justify-center bg-white px-5 py-10 sm:px-10 lg:h-full lg:min-h-0 lg:w-1/2 lg:px-12 lg:py-6 xl:px-24 ${mode === 'signup' && role === 'student' && clubRole !== 'none' ? 'overflow-y-auto' : 'overflow-visible'} lg:items-center`}>
           <div className="auth-form-content w-full max-w-md">
             <div className="mb-8 lg:hidden">
               <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[#62513d] text-white shadow-lg">
