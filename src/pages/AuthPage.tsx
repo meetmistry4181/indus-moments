@@ -70,7 +70,7 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen bg-[#eef7ff] flex items-center justify-center p-0 sm:p-5 lg:p-8">
       <div className="flex min-h-screen w-full max-w-[1440px] overflow-hidden bg-white shadow-2xl sm:min-h-0 sm:rounded-[28px]">
-        <section className="relative hidden min-h-[760px] w-[52%] overflow-hidden bg-[#cfeaff] px-10 py-10 lg:flex lg:flex-col lg:justify-between xl:px-16">
+        <section className="relative hidden min-h-[760px] w-1/2 overflow-hidden bg-[#cfeaff] px-10 py-10 lg:flex lg:flex-col lg:justify-between xl:px-16">
           <div className="relative z-10 flex items-start justify-between gap-6">
             <div className="flex items-center gap-3">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#62513d] text-white shadow-lg">
@@ -93,24 +93,12 @@ export default function AuthPage() {
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#62513d]/70">Welcome to</p>
             <h1 className="max-w-xl text-4xl font-extrabold tracking-tight text-[#172434] xl:text-5xl">Indus University</h1>
             <p className="mt-4 max-w-md text-base leading-7 text-[#38516a]">A place where ideas take shape, communities come together, and every moment becomes part of your university story.</p>
-            <div className="mt-8 grid grid-cols-[1.45fr_0.8fr] gap-3">
+            <div className="mt-8 overflow-hidden rounded-2xl bg-white/40 p-2 shadow-xl ring-4 ring-white/40">
               <img
-                src="https://images.unsplash.com/photo-1564981797816-1043664bf78d?auto=format&fit=crop&w=1000&q=85"
-                alt="University campus"
-                className="h-64 w-full rounded-2xl object-cover shadow-xl ring-4 ring-white/40"
+                src="https://www.serosoft.com/client_images/Indus/indusbanner.jpg"
+                alt="Indus University campus"
+                className="h-auto max-h-[360px] min-h-[250px] w-full object-contain"
               />
-              <div className="grid gap-3">
-                <img
-                  src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=700&q=85"
-                  alt="Students on campus"
-                  className="h-[122px] w-full rounded-2xl object-cover shadow-lg ring-4 ring-white/30"
-                />
-                <img
-                  src="https://images.unsplash.com/photo-1519452575417-564c1401ecc0?auto=format&fit=crop&w=700&q=85"
-                  alt="University library"
-                  className="h-[122px] w-full rounded-2xl object-cover shadow-lg ring-4 ring-white/30"
-                />
-              </div>
             </div>
           </div>
 
@@ -125,7 +113,7 @@ export default function AuthPage() {
           <div className="absolute -right-28 top-1/3 h-72 w-72 rounded-full border-[36px] border-white/20" />
         </section>
 
-        <main className="flex w-full items-center justify-center bg-white px-5 py-10 sm:px-10 lg:w-[48%] lg:px-16 xl:px-24">
+        <main className="flex w-full items-center justify-center bg-white px-5 py-10 sm:px-10 lg:w-1/2 lg:px-16 xl:px-24">
           <div className="w-full max-w-md">
             <div className="mb-8 lg:hidden">
               <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[#62513d] text-white shadow-lg">
