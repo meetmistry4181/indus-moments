@@ -69,8 +69,8 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-[#eef7ff] flex items-center justify-center p-0 sm:p-5 lg:p-8">
-      <div className="flex min-h-screen w-full max-w-[1440px] overflow-hidden bg-white shadow-2xl sm:min-h-0 sm:rounded-[28px]">
-        <section className="relative hidden min-h-[760px] w-1/2 overflow-hidden bg-[#cfeaff] px-10 py-10 lg:flex lg:flex-col lg:justify-between xl:px-16">
+      <div className="flex min-h-screen w-full max-w-[1440px] flex-col overflow-hidden bg-white shadow-2xl sm:min-h-0 sm:rounded-[28px] lg:flex-row">
+        <section className="relative flex min-h-[560px] w-full flex-col justify-between overflow-hidden bg-[#cfeaff] px-5 py-8 sm:px-10 sm:py-10 lg:min-h-[760px] lg:w-1/2 xl:px-16">
           <div className="relative z-10 flex items-start justify-between gap-6">
             <div className="flex items-center gap-3">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#62513d] text-white shadow-lg">
