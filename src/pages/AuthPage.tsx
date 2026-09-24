@@ -16,6 +16,7 @@ export default function AuthPage() {
   const [clubRole, setClubRole] = useState<'none' | 'president' | 'photographer'>('none');
   const [clubId, setClubId] = useState('');
   const [clubs, setClubs] = useState<Club[]>([]);
+  const [clubLoadError, setClubLoadError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -23,7 +24,14 @@ export default function AuthPage() {
 
   useEffect(() => {
     if (mode !== 'signup' || role !== 'student') return;
-    void supabase.rpc('list_signup_clubs').then(({ data }) => setClubs((data ?? []) as Club[]));
+    setClubLoadError(null);
+    void supabase.rpc('list_signup_clubs').then(({ data, error: clubsError }) => {
+      if (clubsError) {
+        setClubLoadError('Club list is not available. Please run the latest Supabase migration.');
+        return;
+      }
+      setClubs(((data ?? []) as Club[]).sort((first, second) => first.name.localeCompare(second.name)));
+    });
   }, [mode, role]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -126,7 +134,7 @@ export default function AuthPage() {
           <div className="absolute -right-28 top-1/3 h-72 w-72 rounded-full border-[36px] border-white/20" />
         </section>
 
-        <main className="flex w-full items-center justify-center overflow-hidden bg-white px-5 py-10 sm:px-10 lg:h-full lg:min-h-0 lg:w-1/2 lg:px-12 lg:py-6 xl:px-24">
+        <main className="auth-form-panel flex w-full items-center justify-center overflow-hidden bg-white px-5 py-10 sm:px-10 lg:h-full lg:min-h-0 lg:w-1/2 lg:px-12 lg:py-6 xl:px-24">
           <div className="w-full max-w-md">
             <div className="mb-8 lg:hidden">
               <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[#62513d] text-white shadow-lg">
@@ -137,13 +145,13 @@ export default function AuthPage() {
               <p className="mt-1 text-sm text-slate-500">University Event Photo Hub</p>
             </div>
 
-            <div className="mb-8">
+            <div className="auth-form-heading mb-8">
               <p className="mb-2 text-sm font-semibold uppercase tracking-[0.16em] text-blue-600">Indus University</p>
               <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">Sign in to Indus Moments</h2>
               <p className="mt-2 text-sm leading-6 text-slate-500">Access your university memories and event photos.</p>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-1 shadow-sm">
+            <div className="auth-form-card rounded-2xl border border-slate-200 bg-white p-1 shadow-sm">
           {/* Tabs */}
           <div className="flex gap-1 p-1 bg-slate-100 rounded-xl mb-6">
             <button
@@ -164,7 +172,7 @@ export default function AuthPage() {
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="auth-form space-y-4">
             {mode === 'signup' && (
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1.5">Full Name</label>
@@ -235,6 +243,7 @@ export default function AuthPage() {
                       <option value="">Select club</option>
                       {clubs.map((club) => <option key={club.id} value={club.id}>{club.name}</option>)}
                     </select>
+                    {clubLoadError && <p className="text-xs text-red-600">{clubLoadError}</p>}
                     <p className="text-xs text-blue-700">Your club role will require admin approval.</p>
                   </>
                 )}
