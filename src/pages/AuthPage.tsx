@@ -91,7 +91,7 @@ export default function AuthPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center overflow-hidden bg-[#eef7ff] p-0 sm:p-5 lg:h-screen lg:min-h-0 lg:p-8">
-      <div className="flex min-h-screen w-full max-w-[1440px] flex-col overflow-hidden bg-white shadow-2xl sm:min-h-0 sm:rounded-[28px] lg:h-full lg:min-h-0 lg:flex-row">
+      <div className="flex min-h-screen w-full max-w-[1440px] flex-col overflow-visible bg-white shadow-2xl sm:min-h-0 sm:rounded-[28px] lg:h-auto lg:min-h-0 lg:flex-row">
         <section className="relative flex min-h-[560px] w-full flex-col justify-between overflow-hidden bg-[#cfeaff] px-5 py-8 sm:px-10 sm:py-10 lg:h-full lg:min-h-0 lg:w-1/2 lg:px-12 lg:py-6 xl:px-16">
           <div className="relative z-10 flex items-start justify-between gap-6">
             <div className="flex items-center gap-3">
@@ -134,7 +134,7 @@ export default function AuthPage() {
           <div className="absolute -right-28 top-1/3 h-72 w-72 rounded-full border-[36px] border-white/20" />
         </section>
 
-        <main className="auth-form-panel flex w-full items-center justify-center overflow-hidden bg-white px-5 py-10 sm:px-10 lg:h-full lg:min-h-0 lg:w-1/2 lg:px-12 lg:py-6 xl:px-24">
+        <main className="auth-form-panel flex w-full items-start justify-center overflow-visible bg-white px-5 py-10 sm:px-10 lg:min-h-[608px] lg:w-1/2 lg:px-12 lg:py-6 xl:px-24">
           <div className="auth-form-content w-full max-w-md">
             <div className="mb-8 lg:hidden">
               <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[#62513d] text-white shadow-lg">
