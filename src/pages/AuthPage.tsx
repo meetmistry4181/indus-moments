@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Mail, Lock, User, ArrowRight, GraduationCap, Shield, Sparkles } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, GraduationCap, Shield, Sparkles } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import type { UserRole } from '@/lib/types';
 
@@ -68,25 +68,81 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-4">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
-      </div>
-
-      <div className="relative w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 shadow-lg shadow-blue-500/30 mb-4">
-            <Camera className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-[#eef7ff] flex items-center justify-center p-0 sm:p-5 lg:p-8">
+      <div className="flex min-h-screen w-full max-w-[1440px] overflow-hidden bg-white shadow-2xl sm:min-h-0 sm:rounded-[28px]">
+        <section className="relative hidden min-h-[760px] w-[52%] overflow-hidden bg-[#cfeaff] px-10 py-10 lg:flex lg:flex-col lg:justify-between xl:px-16">
+          <div className="relative z-10 flex items-start justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#62513d] text-white shadow-lg">
+                <GraduationCap className="h-8 w-8" />
+              </div>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#62513d]">સત्यमેવ જયતે</p>
+                <p className="text-xl font-extrabold leading-none tracking-tight text-[#62513d]">INDUS</p>
+                <p className="text-xl font-extrabold leading-none tracking-tight text-[#62513d]">UNIVERSITY</p>
+                <p className="mt-1 text-[9px] font-semibold uppercase tracking-[0.17em] text-[#62513d]/75">Where Practice Meets Theory</p>
+              </div>
+            </div>
+            <div className="rounded-xl bg-[#11a8dc] px-3 py-2 text-center text-white shadow-md">
+              <p className="text-lg font-black leading-none">WIIA</p>
+              <p className="mt-1 text-[8px] font-semibold uppercase tracking-widest">Inspire</p>
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Indus Moments</h1>
-          <p className="text-sm text-slate-400 mt-1">University Event Photo Hub</p>
-        </div>
 
-        {/* Card */}
-        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-8">
+          <div className="relative z-10 my-8">
+            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#62513d]/70">Welcome to</p>
+            <h1 className="max-w-xl text-4xl font-extrabold tracking-tight text-[#172434] xl:text-5xl">Indus University</h1>
+            <p className="mt-4 max-w-md text-base leading-7 text-[#38516a]">A place where ideas take shape, communities come together, and every moment becomes part of your university story.</p>
+            <div className="mt-8 grid grid-cols-[1.45fr_0.8fr] gap-3">
+              <img
+                src="https://images.unsplash.com/photo-1564981797816-1043664bf78d?auto=format&fit=crop&w=1000&q=85"
+                alt="University campus"
+                className="h-64 w-full rounded-2xl object-cover shadow-xl ring-4 ring-white/40"
+              />
+              <div className="grid gap-3">
+                <img
+                  src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=700&q=85"
+                  alt="Students on campus"
+                  className="h-[122px] w-full rounded-2xl object-cover shadow-lg ring-4 ring-white/30"
+                />
+                <img
+                  src="https://images.unsplash.com/photo-1519452575417-564c1401ecc0?auto=format&fit=crop&w=700&q=85"
+                  alt="University library"
+                  className="h-[122px] w-full rounded-2xl object-cover shadow-lg ring-4 ring-white/30"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="relative z-10 flex items-end justify-between gap-5 text-[#38516a]">
+            <div>
+              <p className="text-sm font-bold text-[#172434]">Indus Moments</p>
+              <p className="mt-1 text-xs">Capture. Discover. Relive.</p>
+            </div>
+            <p className="text-right text-xs font-medium">Ahmedabad, Gujarat<br />www.indusuni.ac.in</p>
+          </div>
+          <div className="absolute -bottom-32 -left-20 h-80 w-80 rounded-full bg-white/25" />
+          <div className="absolute -right-28 top-1/3 h-72 w-72 rounded-full border-[36px] border-white/20" />
+        </section>
+
+        <main className="flex w-full items-center justify-center bg-white px-5 py-10 sm:px-10 lg:w-[48%] lg:px-16 xl:px-24">
+          <div className="w-full max-w-md">
+            <div className="mb-8 lg:hidden">
+              <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[#62513d] text-white shadow-lg">
+                <GraduationCap className="h-8 w-8" />
+              </div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#62513d]">Indus University</p>
+              <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900">Indus Moments</h1>
+              <p className="mt-1 text-sm text-slate-500">University Event Photo Hub</p>
+            </div>
+
+            <div className="mb-8">
+              <p className="mb-2 text-sm font-semibold uppercase tracking-[0.16em] text-blue-600">Indus University</p>
+              <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">Sign in to Indus Moments</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-500">Access your university memories and event photos.</p>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-1 shadow-sm">
           {/* Tabs */}
           <div className="flex gap-1 p-1 bg-slate-100 rounded-xl mb-6">
             <button
@@ -213,29 +269,14 @@ export default function AuthPage() {
               Confirm your university email to access the platform.
             </p>
           )}
-        </div>
+            </div>
 
-        {/* Feature badges */}
-        <div className="grid grid-cols-3 gap-3 mt-6">
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 mb-2">
-              <Sparkles className="w-5 h-5 text-cyan-300" />
+            <div className="mt-6 flex items-center justify-center gap-5 text-xs text-slate-400">
+              <span className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-blue-500" /> AI Face Match</span>
+              <span className="flex items-center gap-1.5"><Shield className="h-3.5 w-3.5 text-emerald-500" /> Private &amp; Secure</span>
             </div>
-            <p className="text-[11px] text-slate-400">AI Face Match</p>
           </div>
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 mb-2">
-              <GraduationCap className="w-5 h-5 text-blue-300" />
-            </div>
-            <p className="text-[11px] text-slate-400">Student Only</p>
-          </div>
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 mb-2">
-              <Shield className="w-5 h-5 text-emerald-300" />
-            </div>
-            <p className="text-[11px] text-slate-400">Private & Secure</p>
-          </div>
-        </div>
+        </main>
       </div>
     </div>
   );
