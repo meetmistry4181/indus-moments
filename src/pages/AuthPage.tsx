@@ -89,15 +89,15 @@ export default function AuthPage() {
             </div>
           </div>
 
-          <div className="relative z-10 my-4">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#62513d]/70">Welcome to</p>
-            <h1 className="max-w-xl text-4xl font-extrabold tracking-tight text-[#172434] xl:text-5xl">Indus University</h1>
-            <p className="mt-4 max-w-md text-base leading-7 text-[#38516a]">A place where ideas take shape, communities come together, and every moment becomes part of your university story.</p>
-            <div className="mt-4 overflow-hidden rounded-2xl bg-white/40 p-2 shadow-xl ring-4 ring-white/40">
+          <div className="relative z-10 my-2">
+            <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-[#62513d]/70">Welcome to</p>
+            <h1 className="max-w-xl text-3xl font-extrabold tracking-tight text-[#172434] xl:text-4xl">Indus University</h1>
+            <p className="mt-2 max-w-md text-sm leading-6 text-[#38516a]">A place where ideas take shape, communities come together, and every moment becomes part of your university story.</p>
+            <div className="mt-3 overflow-hidden rounded-2xl bg-white/40 p-2 shadow-xl ring-4 ring-white/40">
               <img
                 src="/indus-banner.jpg"
                 alt="Indus University campus"
-                className="h-auto max-h-[280px] min-h-[180px] w-full object-contain"
+                className="h-auto max-h-[230px] min-h-[150px] w-full object-contain"
               />
             </div>
           </div>
