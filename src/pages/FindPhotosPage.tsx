@@ -8,13 +8,15 @@ import {
   Camera,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { detectSingleFace, descriptorToArray } from '@/lib/faceApi';
+import { detectFaces, detectSingleFace, descriptorToArray } from '@/lib/faceApi';
 
 type MatchResult = {
   photo_id: string;
   distance: number;
   url?: string;
 };
+
+type PhotoCandidate = { id: string; storage_path: string };
 
 type CaptureAngle = 'front' | 'right' | 'left';
 
@@ -78,6 +80,51 @@ export default function FindPhotosPage() {
     }
 
     return { matches: Array.from(combined.values()).sort((a, b) => a.distance - b.distance), error: null, usedThreshold: null };
+  };
+
+  const findLocalMatches = async (embeddings: number[][]) => {
+    const { data: photos, error: photosError } = await supabase
+      .from('photos')
+      .select('id, storage_path')
+      .order('created_at', { ascending: false });
+
+    if (photosError || !photos) return { matches: [], error: photosError };
+
+    const matches: { photo_id: string; distance: number }[] = [];
+    for (const photo of photos as PhotoCandidate[]) {
+      const { data: signed } = await supabase.storage
+        .from('event-photos')
+        .createSignedUrl(photo.storage_path, 300);
+      if (!signed?.signedUrl) continue;
+
+      const image = new Image();
+      image.src = signed.signedUrl;
+      try {
+        await new Promise<void>((resolve, reject) => {
+          image.onload = () => resolve();
+          image.onerror = () => reject(new Error('Image could not load'));
+        });
+        const faces = await detectFaces(image);
+        let bestDistance = Number.POSITIVE_INFINITY;
+        for (const face of faces) {
+          const candidate = descriptorToArray(face.descriptor);
+          for (const embedding of embeddings) {
+            const distance = Math.sqrt(candidate.reduce((sum, value, index) => sum + (value - embedding[index]) ** 2, 0));
+            bestDistance = Math.min(bestDistance, distance);
+          }
+        }
+        if (Number.isFinite(bestDistance) && bestDistance <= 0.95) {
+          matches.push({ photo_id: photo.id, distance: bestDistance });
+        }
+      } catch {
+        // Skip photos that cannot be loaded or decoded.
+      }
+    }
+
+    return {
+      matches: matches.sort((first, second) => first.distance - second.distance).slice(0, 12),
+      error: null,
+    };
   };
 
   const stopCamera = () => {
@@ -182,7 +229,9 @@ export default function FindPhotosPage() {
       }
 
       setDebugInfo(`Debug: ${embeddings.length} face descriptor${embeddings.length === 1 ? '' : 's'} generated.`);
-      const { matches, error } = await findMatchesForEmbeddings(embeddings);
+      const matchResult = await findMatchesForEmbeddings(embeddings);
+      let { matches } = matchResult;
+      const { error } = matchResult;
 
       if (error) {
         setDebugInfo('Debug: face matching RPC returned an error.');
@@ -190,6 +239,17 @@ export default function FindPhotosPage() {
           'Matching is unavailable right now. Please try again later.'
         );
         return;
+      }
+
+      if (matches.length === 0) {
+        setMessage('No indexed match found. Checking the original event photos...');
+        const localResult = await findLocalMatches(embeddings);
+        if (localResult.error) {
+          setDebugInfo(`Debug: event photo scan failed: ${localResult.error.message}`);
+        } else {
+          matches = localResult.matches;
+          setDebugInfo(`Debug: scanned original event photos and found ${matches.length} close match${matches.length === 1 ? '' : 'es'}.`);
+        }
       }
 
       if (matches.length > 0) {
