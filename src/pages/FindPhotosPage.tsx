@@ -9,7 +9,6 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { detectSingleFace, descriptorToArray } from '@/lib/faceApi';
-import { useAuth } from '@/lib/AuthContext';
 
 type MatchResult = {
   photo_id: string;
@@ -17,15 +16,24 @@ type MatchResult = {
   url?: string;
 };
 
-export default function FindPhotosPage() {
-  const { profile } = useAuth();
+type CaptureAngle = 'front' | 'right' | 'left';
 
+const captureAngles: CaptureAngle[] = ['front', 'right', 'left'];
+const captureAngleLabels: Record<CaptureAngle, string> = {
+  front: 'Front-facing',
+  right: 'Turn right',
+  left: 'Turn left',
+};
+
+export default function FindPhotosPage() {
   const [preview, setPreview] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [debugInfo, setDebugInfo] = useState<string>('');
   const [results, setResults] = useState<MatchResult[]>([]);
   const [cameraOpen, setCameraOpen] = useState(false);
+  const [captureAngle, setCaptureAngle] = useState<CaptureAngle>('front');
+  const [captures, setCaptures] = useState<{ angle: CaptureAngle; url: string }[]>([]);
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const cameraVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -55,6 +63,21 @@ export default function FindPhotosPage() {
     }
 
     return { matches: [] as { photo_id: string; distance: number }[], error: null, usedThreshold: null };
+  };
+
+  const findMatchesForEmbeddings = async (embeddings: number[][]) => {
+    const combined = new Map<string, { photo_id: string; distance: number }>();
+
+    for (const embedding of embeddings) {
+      const result = await findMatches(embedding);
+      if (result.error) return result;
+      for (const match of result.matches) {
+        const existing = combined.get(match.photo_id);
+        if (!existing || match.distance < existing.distance) combined.set(match.photo_id, match);
+      }
+    }
+
+    return { matches: Array.from(combined.values()).sort((a, b) => a.distance - b.distance), error: null, usedThreshold: null };
   };
 
   const stopCamera = () => {
@@ -108,68 +131,58 @@ export default function FindPhotosPage() {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     canvas.toBlob(async (blob) => {
       if (!blob) return;
-      const file = new File([blob], `selfie-${Date.now()}.jpg`, { type: 'image/jpeg' });
+      const file = new File([blob], `selfie-${captureAngle}-${Date.now()}.jpg`, { type: 'image/jpeg' });
       stopCamera();
-      await choose(file);
+      void addCameraCapture(file, captureAngle);
     }, 'image/jpeg', 0.92);
   };
 
-  const choose = async (file?: File) => {
-    if (!file) return;
+  const addCameraCapture = async (file: File, angle: CaptureAngle) => {
+    const url = URL.createObjectURL(file);
+    const nextCaptures = [...captures.filter((capture) => capture.angle !== angle), { angle, url }];
+    setCaptures(nextCaptures);
+    setPreview(url);
+    setMessage(`${nextCaptures.length} of ${captureAngles.length} angles captured.`);
+
+    if (nextCaptures.length === captureAngles.length) {
+      await chooseMany(nextCaptures.map((capture) => capture.url));
+      return;
+    }
+
+    const nextAngle = captureAngles.find((candidate) => !nextCaptures.some((capture) => capture.angle === candidate));
+    if (nextAngle) setCaptureAngle(nextAngle);
+  };
+
+  const chooseMany = async (imageUrls: string[]) => {
+    if (imageUrls.length === 0) return;
 
     // Only allow image files
-    if (!file.type.startsWith('image/')) {
-      setMessage('Please select a valid image file.');
-      return;
-    }
-
-    // Limit selfie size to 10 MB
-    if (file.size > 10 * 1024 * 1024) {
-      setMessage('Please choose an image smaller than 10 MB.');
-      return;
-    }
-
-    // Create one temporary URL for the selfie
-    const imageUrl = URL.createObjectURL(file);
-
-    setPreview(imageUrl);
     setBusy(true);
     setMessage('');
     setDebugInfo('');
     setResults([]);
 
     try {
-      // Load image
-      const img = new Image();
-      img.src = imageUrl;
+      const embeddings: number[][] = [];
+      for (const imageUrl of imageUrls) {
+        const img = new Image();
+        img.src = imageUrl;
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error('Could not load image'));
+        });
+        const descriptor = await detectSingleFace(img);
+        if (descriptor) embeddings.push(descriptorToArray(descriptor));
+      }
 
-      await new Promise<void>((resolve, reject) => {
-        img.onload = () => resolve();
-        img.onerror = () => reject(new Error('Could not load image'));
-      });
-
-      // Detect face
-      const descriptor = await detectSingleFace(img);
-
-      if (!descriptor) {
-        setDebugInfo('Debug: no face was detected in the uploaded selfie image.');
-        setMessage(
-          'No clear face found. Try a front-facing selfie with good lighting.'
-        );
+      if (embeddings.length === 0) {
+        setDebugInfo('Debug: no face was detected in the captured images.');
+        setMessage('No clear face found. Keep your face centered and use good lighting.');
         return;
       }
 
-      // Convert face descriptor
-      const embedding = descriptorToArray(descriptor);
-
-      const debugSummary = `Debug: selfie descriptor generated successfully (${embedding.length} values).`;
-      setDebugInfo(debugSummary);
-      console.info('Selfie face descriptor ready', {
-        embeddingLength: embedding.length,
-        sample: embedding.slice(0, 8),
-      });
-
-      const { matches, error, usedThreshold } = await findMatches(embedding);
+      setDebugInfo(`Debug: ${embeddings.length} face descriptor${embeddings.length === 1 ? '' : 's'} generated.`);
+      const { matches, error } = await findMatchesForEmbeddings(embeddings);
 
       if (error) {
         setDebugInfo('Debug: face matching RPC returned an error.');
@@ -179,19 +192,19 @@ export default function FindPhotosPage() {
         return;
       }
 
-      if (usedThreshold !== null) {
-        const summary = `Debug: match found using threshold ${usedThreshold} (${matches.length} result${matches.length === 1 ? '' : 's'}).`;
+      if (matches.length > 0) {
+        const summary = `Debug: matches found across ${embeddings.length} angle descriptor${embeddings.length === 1 ? '' : 's'} (${matches.length} result${matches.length === 1 ? '' : 's'}).`;
         setDebugInfo(summary);
         console.info('Face match succeeded using threshold', {
-          threshold: usedThreshold,
+          descriptorCount: embeddings.length,
           matchCount: matches.length,
         });
       } else {
         const summary = 'Debug: no match found at any tested threshold (0.6, 0.8, 0.95). This usually means no face embedding exists for the event photos or the face is too different.';
         setDebugInfo(summary);
         console.warn('No match found for selfie at any threshold', {
-          embeddingLength: embedding.length,
-          sample: embedding.slice(0, 8),
+          embeddingCount: embeddings.length,
+          sample: embeddings[0]?.slice(0, 8),
         });
       }
 
@@ -255,8 +268,24 @@ export default function FindPhotosPage() {
       setBusy(false);
 
       // Remove temporary browser object URL
-      URL.revokeObjectURL(imageUrl);
+      if (captures.length === 0) imageUrls.forEach((imageUrl) => URL.revokeObjectURL(imageUrl));
     }
+  };
+
+  const choose = async (file?: File) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setMessage('Please select a valid image file.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setMessage('Please choose an image smaller than 10 MB.');
+      return;
+    }
+    const imageUrl = URL.createObjectURL(file);
+    setPreview(imageUrl);
+    await chooseMany([imageUrl]);
+    URL.revokeObjectURL(imageUrl);
   };
 
   return (
@@ -270,10 +299,9 @@ export default function FindPhotosPage() {
           Find My Photos
         </h1>
 
-        <p className="mt-2 max-w-2xl text-sm text-slate-500">
-          Upload one selfie and we’ll look through approved event albums
-          for photos where you appear. Your selfie is used only for
-          matching.
+          <p className="mt-2 max-w-2xl text-sm text-slate-500">
+          Upload one selfie or use the camera to capture your front, right,
+          and left angles. The three-angle scan is used only for matching.
         </p>
       </div>
 
@@ -331,6 +359,9 @@ export default function FindPhotosPage() {
 
           {cameraOpen && (
             <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
+              <p className="mb-3 text-center text-sm font-semibold text-slate-700">
+                Step {captures.length + 1} of 3: {captureAngleLabels[captureAngle]}
+              </p>
               <div className="overflow-hidden rounded-xl bg-slate-100">
                 <video ref={cameraVideoRef} autoPlay muted playsInline className="h-64 w-full object-cover" />
               </div>
@@ -338,6 +369,16 @@ export default function FindPhotosPage() {
                 <button type="button" onClick={captureFromCamera} className="flex-1 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700">Capture</button>
                 <button type="button" onClick={stopCamera} className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">Cancel</button>
               </div>
+            </div>
+          )}
+
+          {captures.length > 0 && (
+            <div className="mt-3 flex flex-wrap justify-center gap-2">
+              {captureAngles.map((angle) => (
+                <span key={angle} className={`rounded-full px-2.5 py-1 text-xs font-medium ${captures.some((capture) => capture.angle === angle) ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                  {captures.some((capture) => capture.angle === angle) ? '✓ ' : ''}{captureAngleLabels[angle]}
+                </span>
+              ))}
             </div>
           )}
 
