@@ -40,7 +40,7 @@ export default function FindPhotosPage() {
   const cameraStreamRef = useRef<MediaStream | null>(null);
 
   const findMatches = async (embedding: number[]) => {
-    const thresholds = [0.6, 0.8, 0.95];
+    const thresholds = [0.6, 0.8, 0.95, 1.05];
 
     for (const maxDistance of thresholds) {
       const { data, error } = await supabase.rpc('match_faces', {
@@ -200,7 +200,7 @@ export default function FindPhotosPage() {
           matchCount: matches.length,
         });
       } else {
-        const summary = 'Debug: no match found at any tested threshold (0.6, 0.8, 0.95). This usually means no face embedding exists for the event photos or the face is too different.';
+        const summary = 'Debug: no match found at any tested threshold (0.6, 0.8, 0.95, 1.05). This usually means no face embedding exists for the event photos or the face is too different.';
         setDebugInfo(summary);
         console.warn('No match found for selfie at any threshold', {
           embeddingCount: embeddings.length,
